@@ -36,7 +36,7 @@ def on_ui_tabs():
                                             </p>")
 
                                     st1_masking_method_index = gr.Radio(label='Masking Method', choices=["transparent-background","clipseg","transparent-background AND clipseg"], value="transparent-background", type="index")
-
+                                    should_mask = gr.Checkbox(label="Enable mask?", value=False)
                                     with gr.Accordion(label="transparent-background options"):
                                         st1_mask_threshold = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Mask Threshold', value=0.0)
 
@@ -147,6 +147,7 @@ def on_ui_tabs():
                     project_dir,
                     original_movie_path,
 
+                    should_mask,
                     frame_width,
                     frame_height,
                     st1_masking_method_index,

@@ -146,7 +146,7 @@ def create_mask_clipseg(input_dir, output_dir, clipseg_mask_prompt, clipseg_excl
     devices.torch_gc()
 
 
-def create_mask_transparent_background(input_dir, output_dir, tb_use_fast_mode, tb_use_jit, st1_mask_threshold):
+def create_mask_transparent_background(dbg, input_dir, output_dir, tb_use_fast_mode, tb_use_jit, st1_mask_threshold):
     from modules import devices
     remover = Remover(fast=tb_use_fast_mode, jit=tb_use_jit, device=devices.get_optimal_device_name())
 
@@ -155,6 +155,7 @@ def create_mask_transparent_background(input_dir, output_dir, tb_use_fast_mode, 
     pbar_original_imgs = tqdm(original_imgs, bar_format='{desc:<15}{percentage:3.0f}%|{bar:50}{r_bar}')
     for m in pbar_original_imgs:
         base_name = os.path.basename(m)
+        dbg.print(base_name, "debug")
         pbar_original_imgs.set_description('{}'.format(base_name))
         img = Image.open(m).convert('RGB')
         out = remover.process(img, type='map')
@@ -162,7 +163,7 @@ def create_mask_transparent_background(input_dir, output_dir, tb_use_fast_mode, 
         cv2.imwrite(os.path.join(output_dir, base_name), out)
 
 
-def ebsynth_utility_stage1(dbg, project_args, frame_width, frame_height, st1_masking_method_index, st1_mask_threshold, tb_use_fast_mode, tb_use_jit, clipseg_mask_prompt, clipseg_exclude_prompt, clipseg_mask_threshold, clipseg_mask_blur_size, clipseg_mask_blur_size2, is_invert_mask):
+def ebsynth_utility_stage1(dbg, project_args, frame_width, frame_height, st1_masking_method_index, st1_mask_threshold, tb_use_fast_mode, tb_use_jit, clipseg_mask_prompt, clipseg_exclude_prompt, clipseg_mask_threshold, clipseg_mask_blur_size, clipseg_mask_blur_size2, is_invert_mask, should_mask):
     dbg.print("stage1")
     dbg.print("")
 
@@ -202,9 +203,9 @@ def ebsynth_utility_stage1(dbg, project_args, frame_width, frame_height, st1_mas
         if frame_width != -1 or frame_height != -1:
             resize_all_img(frame_path, frame_width, frame_height)
 
-    if frame_mask_path:
+    if frame_mask_path and should_mask:
         if st1_masking_method_index == 0:
-            create_mask_transparent_background(frame_path, frame_mask_path, tb_use_fast_mode, tb_use_jit, st1_mask_threshold)
+            create_mask_transparent_background(dbg, frame_path, frame_mask_path, tb_use_fast_mode, tb_use_jit, st1_mask_threshold)
         elif st1_masking_method_index == 1:
             create_mask_clipseg(frame_path, frame_mask_path, clipseg_mask_prompt, clipseg_exclude_prompt, clipseg_mask_threshold, clipseg_mask_blur_size, clipseg_mask_blur_size2)
         elif st1_masking_method_index == 2:
